@@ -1,5 +1,7 @@
 import re
 
+#tokenizer class for encoding decoding new text
+
 class SimpleTokenizerV1:
     def __init__(self, vocab):
         self.str_to_int = vocab
