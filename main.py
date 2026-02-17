@@ -1,5 +1,8 @@
 import re
 
+from torch.nn.functional import dropout
+
+from CausalAttention import CausalAttention
 from GPTDatasetV1 import create_dataloader_v1
 from SelfAttention_v1 import SelfAttention_v1
 from SelfAttention_v2 import SelfAttention_v2
@@ -41,11 +44,17 @@ if __name__ == '__main__':
     d_in = inputs2.shape[1]
     d_out = 2
 
-    torch.manual_seed(789)
 
-    sa_v1 = SelfAttention_v1(d_in, d_out)
-    sa_v2 = SelfAttention_v2(d_in, d_out)
+    torch.manual_seed(123)
+    batch = torch.stack((inputs2, inputs2), dim=0)
+    context_length = batch.shape[1]
+    ca = CausalAttention(d_in, d_out, context_length, 0.0)
+    context_vecs = ca(batch)
 
-    print(sa_v2(inputs2))
+    print(context_vecs.shape)
+
+
+
+
 
 
