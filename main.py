@@ -1,6 +1,8 @@
 import re
 
 from GPTDatasetV1 import create_dataloader_v1
+from SelfAttention_v1 import SelfAttention_v1
+from SelfAttention_v2 import SelfAttention_v2
 from SimpleTokenizer import SimpleTokenizerV1
 from importlib.metadata import version
 import tiktoken
@@ -33,22 +35,17 @@ if __name__ == '__main__':
         [[0.43, 0.15, 0.89],  [0.55, 0.87, 0.66],
          [0.57, 0.85, 0.64],
          [0.22, 0.58, 0.33],  [0.77, 0.25, 0.10], [0.05, 0.80, 0.55]] )
-    query = inputs2[1]
-    attn_scores_2 = torch.empty(inputs2.shape[0])
-    for i, x_i in enumerate(inputs2):
-        attn_scores_2[i] = torch.dot(x_i, query)
 
-    #naive implementation of converting attention score to weights by normalization
-    attn_weights_2_tmp = attn_scores_2 / attn_scores_2.sum()
+    #using pytorch to compute attention score, weights and context vectors
+    x_2 = inputs2[1]
+    d_in = inputs2.shape[1]
+    d_out = 2
 
+    torch.manual_seed(789)
 
-    #using torch softmax for normalization
-    attn_weights_2 = torch.softmax(attn_scores_2, dim=0)
+    sa_v1 = SelfAttention_v1(d_in, d_out)
+    sa_v2 = SelfAttention_v2(d_in, d_out)
 
+    print(sa_v2(inputs2))
 
-    query = inputs2[1]
-    context_vec_2 = torch.zeros(query.shape)
-    for i, x_i in enumerate(inputs2):
-        context_vec_2 += attn_weights_2[i] * x_i
-    print("context_vec_2", context_vec_2)
 
