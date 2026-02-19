@@ -1,9 +1,12 @@
 import re
 
 from torch.nn.functional import dropout
+from torch.utils.data import dataloader
 
 from CausalAttention import CausalAttention
 from GPTDatasetV1 import create_dataloader_v1
+from MultiHeadAttention import MultiHeadAttention
+from MultiHeadAttentionWrapper import MultiHeadAttentionWrapper
 from SelfAttention_v1 import SelfAttention_v1
 from SelfAttention_v2 import SelfAttention_v2
 from SimpleTokenizer import SimpleTokenizerV1
@@ -39,20 +42,14 @@ if __name__ == '__main__':
          [0.57, 0.85, 0.64],
          [0.22, 0.58, 0.33],  [0.77, 0.25, 0.10], [0.05, 0.80, 0.55]] )
 
-    #using pytorch to compute attention score, weights and context vectors
-    x_2 = inputs2[1]
-    d_in = inputs2.shape[1]
-    d_out = 2
-
-
     torch.manual_seed(123)
     batch = torch.stack((inputs2, inputs2), dim=0)
-    context_length = batch.shape[1]
-    ca = CausalAttention(d_in, d_out, context_length, 0.0)
-    context_vecs = ca(batch)
-
-    print(context_vecs.shape)
-
+    batch_size, context_length, d_in = batch.shape
+    d_out = 2
+    mha = MultiHeadAttention(d_in, d_out, context_length, 0.0, num_heads=2)
+    context_vecs = mha(batch)
+    print(context_vecs)
+    print("context_vecs.shape:", context_vecs.shape)
 
 
 
