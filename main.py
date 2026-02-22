@@ -1,3 +1,4 @@
+
 import GPT_CONFIG
 from DummyGPTModel import DummyGPTModel
 from GPTDatasetV1 import create_dataloader_v1
@@ -5,6 +6,7 @@ from LayerNorm import LayerNorm
 import tiktoken
 import torch
 import torch.nn as nn
+from GELU import FeedForward
 
 
 
@@ -28,7 +30,7 @@ if __name__ == '__main__':
     torch.manual_seed(123)
     batch_example = torch.randn(2,5)
     layer = nn.Sequential(nn.Linear(5,6), nn.ReLU())
-    out = layer(batch_example)
+
 
 
     torch.set_printoptions(sci_mode=False)
@@ -40,8 +42,11 @@ if __name__ == '__main__':
     out_ln = ln(batch_example)
     mean = out_ln.mean(dim=-1, keepdim=True)
     var = out_ln.var(dim=-1, unbiased=False, keepdim=True)
-    print("Mean:\n", mean)
-    print("Variance:\n", var)
+
+    ffn = FeedForward(GPT_CONFIG.GPT_CONFIG_124M)
+    x = torch.rand(2, 3, 768)
+    out = ffn(x)
+    print(out.shape)
 
 
 
