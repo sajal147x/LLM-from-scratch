@@ -1,18 +1,10 @@
-import re
-
-from torch.nn.functional import dropout
-from torch.utils.data import dataloader
-
-from CausalAttention import CausalAttention
+import GPT_CONFIG
+from DummyGPTModel import DummyGPTModel
 from GPTDatasetV1 import create_dataloader_v1
-from MultiHeadAttention import MultiHeadAttention
-from MultiHeadAttentionWrapper import MultiHeadAttentionWrapper
-from SelfAttention_v1 import SelfAttention_v1
-from SelfAttention_v2 import SelfAttention_v2
-from SimpleTokenizer import SimpleTokenizerV1
-from importlib.metadata import version
+from LayerNorm import LayerNorm
 import tiktoken
 import torch
+import torch.nn as nn
 
 
 
@@ -24,32 +16,35 @@ if __name__ == '__main__':
     dataLoader = create_dataloader_v1(raw_text, batch_size=8, max_length=max_length, stride=max_length, shuffle=False)
     data_iter = iter(dataLoader)
     inputs, targets = next(data_iter)
-    vocab_size = 50257
-    output_dim = 256 #number of dimsensions for the token embeddings
-  #  torch.manual_seed(123)
-    embedding_layer = torch.nn.Embedding(vocab_size, output_dim) #creating an embedding layer using pytorch
-    token_embeddings = embedding_layer(inputs)
-    context_length = max_length
-    pos_embedding_layer = torch.nn.Embedding(context_length, output_dim)
-    # positional embedding layer to keep track of position of the tokens
-    pos_embedding = pos_embedding_layer(torch.arange(context_length))
-    #final input embeddings
-    input_embeddings = token_embeddings + pos_embedding
 
-    #sample data for computing attention scores
-    inputs2 = torch.tensor(
-        [[0.43, 0.15, 0.89],  [0.55, 0.87, 0.66],
-         [0.57, 0.85, 0.64],
-         [0.22, 0.58, 0.33],  [0.77, 0.25, 0.10], [0.05, 0.80, 0.55]] )
+    tokenizer = tiktoken.get_encoding("gpt2")
+    batch = []
+    txt1 = "Every effort moves you"
+    txt2 = "Every day holds a"
+    batch.append(torch.tensor(tokenizer.encode(txt1)))
+    batch.append(torch.tensor(tokenizer.encode(txt2)))
+    batch = torch.stack(batch, dim=0)
 
     torch.manual_seed(123)
-    batch = torch.stack((inputs2, inputs2), dim=0)
-    batch_size, context_length, d_in = batch.shape
-    d_out = 2
-    mha = MultiHeadAttention(d_in, d_out, context_length, 0.0, num_heads=2)
-    context_vecs = mha(batch)
-    print(context_vecs)
-    print("context_vecs.shape:", context_vecs.shape)
+    batch_example = torch.randn(2,5)
+    layer = nn.Sequential(nn.Linear(5,6), nn.ReLU())
+    out = layer(batch_example)
+
+
+    torch.set_printoptions(sci_mode=False)
+
+    model = DummyGPTModel(GPT_CONFIG.GPT_CONFIG_124M)
+    logits = model(batch)
+
+    ln = LayerNorm(emb_dim = 5)
+    out_ln = ln(batch_example)
+    mean = out_ln.mean(dim=-1, keepdim=True)
+    var = out_ln.var(dim=-1, unbiased=False, keepdim=True)
+    print("Mean:\n", mean)
+    print("Variance:\n", var)
+
+
+
 
 
 
